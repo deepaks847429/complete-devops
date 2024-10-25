@@ -4,7 +4,7 @@
 - a-> you have tour docker image in the docker registry and want to deploy it in a cloud native fashion.
 - you want to not worry about patching, crashes. You want the system to auto heal.
 - you want to autoscale with simple constructs.
-- you want to observe your comple system in simple dashboard.
+- you want to observe your complete system in simple dashboard.
 
 # nodes
 - In kubernetes, you can create and connect various machines together, all of which are running kubernetes. Every machine here is known as a node.
