@@ -1,5 +1,5 @@
 # what is kubernetes?
-- kubernetes is a container orchestration engine, which as the name suggestslets you create, delete and update container.
+- kubernetes is a container orchestration engine, which as the name suggests lets you create, delete and update container.
 
 - a-> you have tour docker image in the docker registry and want to deploy it in a cloud native fashion.
 - you want to not worry about patching, crashes. You want the system to auto heal.
