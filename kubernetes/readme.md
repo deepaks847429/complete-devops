@@ -106,4 +106,78 @@ spec:
 
 - applying the maifest(kubectl apply -f manifest.yml)
 - Delete the pod (kubectl delete pod nginx)
+
+# Deployment 
+- A Deployment in Kubernetes is a higher-level abstraction that manages a set of Pods and provides declarative updates to them. It offers features like scaling, rolling updates, and rollback capabilities, making it easier to manage the lifecycle of applications.
+
+- Pod: A Pod is the smallest and simplest Kubernetes object. It represents a single instance of a running process in your cluster, typically containing one or more containers.
+
+- Deployment: A Deployment is a higher-level controller that manages a set of identical Pods. It ensures the desired number of Pods are running and provides declarative updates to the Pods it manages.
+
+- Abstraction Level:
+ - Pod: A Pod is the smallest and simplest Kubernetes object. It represents a single instance of a running process in your cluster, typically containing one or more containers.
+ - Deployment: A Deployment is a higher-level controller that manages a set of identical Pods. It ensures the desired number of Pods are running and provides declarative updates to the Pods it manages.
+
+
+- Management:
+  - Pod: They are ephemeral, meaning they can be created and destroyed frequently.
+  - Deployment: Deployments manage Pods by ensuring the specified number of replicas are running at any given time. If a Pod fails, the Deployment controller replaces it automatically.
+
+- Updates:
+Pod: Directly updating a Pod requires manual intervention and can lead to downtime.
+Deployment: Supports rolling updates, allowing you to update the Pod template (e.g., new container image) and roll out changes gradually. If something goes wrong, you can roll back to a previous version.
+
+- Scaling:
+Pod: Scaling Pods manually involves creating or deleting individual Pods.
+Deployment: Allows easy scaling by specifying the desired number of replicas. The Deployment controller adjusts the number of Pods automatically.
+- Self-Healing:
+Pod: If a Pod crashes, it needs to be restarted manually unless managed by a higher-level controller like a Deployment.
+Deployment: Automatically replaces failed Pods, ensuring the desired state is maintained.
+
+# Replicaset
+A ReplicaSet in Kubernetes is a controller that ensures a specified number of pod replicas are running at any given time. It is used to maintain a stable set of replica Pods running in the cluster, even if some Pods fail or are deleted.
+ 
+When you create a deployment, you mention the amount of replicas you want for this specific pod to run. The deployment then creates a new ReplicaSet that is responsible for creating X number of pods.
+
+# Series of events
+User creates a deployment which creates a replicaset which creates pods
+If pods go down, replicaset controller  ensures to bring them back up.
+
+# series of event in detail
+- Series of events
+When you run the following command, a bunch of things happen
+- kubectl create deployment nginx-deployment --image=nginx --port=80 --replicas=3
+
+Step-by-Step Breakdown:
+- Command Execution:
+You execute the command on a machine with kubectl installed and configured to interact with your Kubernetes cluster.
+- API Request:
+kubectl sends a request to the Kubernetes API server to create a Deployment resource with the specified parameters.
+- API Server Processing:
+The API server receives the request, validates it, and then processes it. If the request is valid, the API server updates the desired state of the cluster stored in etcd. The desired state now includes the new Deployment resource.
+- Storage in etcd:
+The Deployment definition is stored in etcd, the distributed key-value store used by Kubernetes to store all its configuration data and cluster state. etcd is the source of truth for the cluster's desired state.
+- Deployment Controller Monitoring:
+The Deployment controller, which is part of the kube-controller-manager, continuously watches the API server for changes to Deployments. It detects the new Deployment you created.
+- ReplicaSet Creation:
+The Deployment controller creates a ReplicaSet based on the Deployment's specification. The ReplicaSet is responsible for maintaining a stable set of replica Pods running at any given time.
+Pod Creation:
+- The ReplicaSet controller (another part of the kube-controller-manager) ensures that the desired number of Pods (in this case, 3) are created and running. It sends requests to the API server to create these Pods.
+- Scheduler Assignment:
+The Kubernetes scheduler watches for new Pods that are in the "Pending" state. It assigns these Pods to suitable nodes in the cluster based on available resources and scheduling policies.
+- Node and Kubelet:
+The kubelet on the selected nodes receives the Pod specifications from the API server. It then pulls the necessary container images (nginx in this case) and starts the containers.
+ 
+ # hierarchial relationship
+ Hierarchical Relationship
+- Deployment:
+High-Level Manager: A Deployment is a higher-level controller that manages the entire lifecycle of an application, including updates, scaling, and rollbacks.
+Creates and Manages ReplicaSets: When you create or update a Deployment, it creates or updates ReplicaSets to reflect the desired state of your application.
+Handles Rolling Updates and Rollbacks: Deployments handle the complexity of updating applications by managing the creation of new ReplicaSets and scaling down old ones.
+- ReplicaSet:
+Mid-Level Manager: A ReplicaSet ensures that a specified number of identical Pods are running at any given time.
+Maintains Desired State of Pods: It creates and deletes Pods as needed to maintain the desired number of replicas.
+Label Selector: Uses label selectors to identify and manage Pods.
+- Pods:
+Lowest-Level Unit: A Pod is the smallest and simplest Kubernetes object. It represents a single instance of a running process in your cluster and typically contains one or more containers.
  
