@@ -181,3 +181,146 @@ Label Selector: Uses label selectors to identify and manage Pods.
 - Pods:
 Lowest-Level Unit: A Pod is the smallest and simplest Kubernetes object. It represents a single instance of a running process in your cluster and typically contains one or more containers.
  
+
+ # Role of deployment
+Deployment ensures that there is a smooth deployment, and if the new image fails for some reason, the old replicaset is maintained.
+Even though the rs is what does pod management , deployment is what does rs management
+
+# services
+
+In Kubernetes, a "Service" is an abstraction that defines a logical set of Pods and a policy by which to access them. Kubernetes Services provide a way to expose applications running on a set of Pods as network services. Here are the key points about Services in Kubernetes:
+
+Key concepts
+- Pod Selector: Services use labels to select the Pods they target. A label selector identifies a set of Pods based on their labels.
+Service Types:
+- ClusterIP: Exposes the Service on an internal IP in the cluster. This is the default ServiceType. The Service is only accessible within the cluster.
+- NodePort: Exposes the Service on each Node’s IP at a static port (the NodePort). A ClusterIP Service, to which the NodePort Service routes, is automatically created. You can contact the NodePort Service, from outside the cluster, by requesting <NodeIP>:<NodePort>.
+- LoadBalancer: Exposes the Service externally using a cloud provider’s load balancer. NodePort and ClusterIP Services, to which the external load balancer routes, are automatically created.
+- Endpoints: These are automatically created and updated by Kubernetes when the Pods selected by a Service's selector change.
+
+# Loadbalancer service 
+
+In Kubernetes, a LoadBalancer service type is a way to expose a service to external clients. When you create a Service of type LoadBalancer, Kubernetes will automatically provision an external load balancer from your cloud provider (e.g., AWS, Google Cloud, Azure) to route traffic to your Kubernetes service
+
+# Downsides of services
+Services are great, but they have some downsides - 
+- Scaling to multiple apps
+- If you have three apps (frontend, backend, websocket server), you will have to create 3 saparate services to route traffic to them. There is no way to do centralized traffic management (routing traffic from the same URL/Path-Based Routing) 
+- There are also limits to how many load balancers you can create
+
+- Multiple certificates for every route
+You can create certificates for your load balancers but you have to maintain them outside the cluster and create them manually
+You also have to update them if they ever expire
+ 
+- No centralized logic to handle rate limitting to all services
+Each load balancer can have its own set of rate limits, but you cant create a single rate limitter for all your services. 
+# ingress
+Ingress in Kubernetes is a critical component for managing external access to services within a Kubernetes cluster. It plays a key role in defining rules that allow external traffic to reach internal services, ensuring secure and controlled access. Here’s why Ingress is important:
+
+1. Simplifies External Access to Services
+Kubernetes services are internally accessible within a cluster by default, but external access needs configuration. Ingress provides a way to route external HTTP(S) requests to specific services within the cluster, making it easier to manage how external users interact with applications running on Kubernetes.
+2. Centralized Traffic Management
+Ingress acts as a single point of entry for all external requests, centralizing the management of routes. It allows administrators to set up routing rules based on paths, hostnames, and other request attributes. This avoids the need for complex load balancer configurations on each service and consolidates routing in one place.
+3. Enables Load Balancing
+Ingress controllers handle load balancing, distributing traffic across multiple instances of a service. This helps improve the scalability and reliability of applications by ensuring that no single pod is overwhelmed by traffic, enhancing overall performance.
+4. SSL Termination for Security
+Ingress can handle SSL/TLS termination, meaning it can decrypt incoming HTTPS traffic before routing it within the cluster. This allows for secure connections from clients without requiring each service to manage its own SSL certificates, streamlining security management.
+5. Supports Path-Based Routing
+With Ingress, you can route traffic based on URL paths. For instance, requests to /api could be directed to an API service, while /web could go to a web front-end service. This enables efficient microservices architectures, where multiple services can coexist under a single domain, each serving different functionality.
+6. Enables Host-Based Routing
+Ingress allows routing based on hostnames, so different services can be exposed under unique subdomains. For instance, api.example.com and web.example.com can be routed to different services within the same cluster, enhancing service isolation and organization.
+7. Reduces Load Balancer Costs
+Without Ingress, you might need a separate load balancer for each service, which can be costly and complex to maintain. Ingress uses a single load balancer to route traffic to multiple services, reducing both operational costs and infrastructure complexity.
+8. Advanced Features via Ingress Controllers
+Kubernetes Ingress is implemented through Ingress controllers, such as NGINX, Traefik, or Istio, which provide advanced features like rate limiting, authentication, custom error pages, and caching. This flexibility allows Ingress to be tailored to the unique needs of your applications and security policies.
+Overall, Ingress is a powerful Kubernetes resource that simplifies external traffic management, enhances security, improves scalability, and enables cost-effective routing to services, making it a fundamental component in production-grade Kubernetes environments.
+
+# Ingress controller
+If you remember from last week, our control plane had a controller manager running.
+- The kube-controller-manager runs a bunch of controllers like
+Replicaset controller
+Deployment controller
+etc
+If you want to add an ingress to your kubernetes cluster, you need to install an ingress controller manually. It doesn’t come by default in k8s
+Famous k8s ingress controllers
+The NGINX Ingress Controller for Kubernetes works with the NGINX webserver (as a proxy).
+HAProxy Ingress is an ingress controller for HAProxy.
+The Traefik Kubernetes Ingress provider is an ingress controller for the Traefik proxy.
+Full list - https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/
+ 
+ # Namespaces
+In Kubernetes, a namespace is a way to divide cluster resources between multiple users/teams. Namespaces are intended for use in environments with many users spread across multiple teams, or projects, or environments like development, staging, and production.
+When you do # NamespaCES 
+# secrets and configmaps
+-  Kubernetes suggests some standard configuration practises.
+These include things like
+You should always create a deployment rather than creating naked pods
+Write your configuration files using YAML rather than JSON
+Configuration files should be stored in version control before being pushed to the cluster
+ 
+Kubernetes v1 API also gives you a way to store configuration of your application outside the image/pod
+This is done using 
+ConfigMaps 
+Secrets
+Rule of thumb
+Don’t bake your application secrets in your docker image
+Pass them in as environment variables whenever you’re starting the container.
+
+# configmap
+A ConfigMap is an API object used to store non-confidential data in key-value pairs. Pods can consume ConfigMaps as environment variables, command-line arguments, or as configuration files in a volume.
+A ConfigMap allows you to decouple environment-specific configuration from your container images, so that your applications are easily portable.
+
+# secrets
+-Secrets
+Secrets are also part of the kubernetes v1 api. They let you store passwords / sensitive data which can then be mounted on to pods as environment variables. Using a Secret means that you don't need to include confidential data in your application code.
+Ref - https://kubernetes.io/docs/concepts/configuration/secret/
+Using a secret
+Create the manifest with a secret and pod (secret value is base64 encoded) (https://www.base64encode.org/)
+
+# config vs secrets
+Key differences
+Purpose and Usage:
+Secrets: Designed specifically to store sensitive data such as passwords, OAuth tokens, and SSH keys.
+ConfigMaps: Used to store non-sensitive configuration data, such as configuration files, environment variables, or command-line arguments.
+Base64 Encoding:
+Secrets: The data stored in Secrets is base64 encoded. This is not encryption but simply encoding, making it slightly obfuscated. This encoding allows the data to be safely transmitted as part of JSON or YAML files.
+ConfigMaps: Data in ConfigMaps is stored as plain text without any encoding.
+Volatility and Updates:
+Secrets: Often, the data in Secrets needs to be rotated or updated more frequently due to its sensitive nature.
+ConfigMaps: Configuration data typically changes less frequently compared to sensitive data.
+Kubernetes Features:
+Secrets: Kubernetes provides integration with external secret management systems and supports encryption at rest for Secrets when configured properly. Ref https://secrets-store-csi-driver.sigs.k8s.io/concepts.html#provider-for-the-secrets-store-csi-driver
+ConfigMaps: While ConfigMaps are used to inject configuration data into pods, they do not have the same level of support for external management and encryption.
+
+# volumes in kubernetes
+- Volumes in kubernetes
+Ref - https://kubernetes.io/docs/concepts/storage/volumes/
+Volumes
+In Kubernetes, a Volume is a directory, possibly with some data in it, which is accessible to a Container as part of its filesystem. Kubernetes supports a variety of volume types, such as EmptyDir, PersistentVolumeClaim, Secret, ConfigMap, and others.
+Why do you need volumes?
+If two containers in the same pod want to share data/fs.
+- If you want to create a database that persists data even when a container restarts (creating a DB)
+-Your pod just needs extra space during execution (for caching lets say) but doesnt care if it persists or not.
+
+# types of volumes
+- Types of volumes
+Ephemeral Volume
+Temporary volume that can be shared amongst various containers of a pod.  When the pods dies, the volume dies with it.
+For example - 
+ConfigMap
+Secret
+emptyDir
+Persistent Volume
+A Persistent Volume (PV) is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using Storage Classes. It is a resource in the cluster just like a node is a cluster resource. PVs are volume plugins like Volumes but have a lifecycle independent of any individual Pod that uses the PV. This API object captures the details of the implementation of the storage, be that NFS, iSCSI, or a cloud-provider-specific storage system.
+Persistent volume claim
+A Persistent Volume Claim (PVC) is a request for storage by a user. It is similar to a Pod. Pods consume node resources and PVCs consume PV resources. Pods can request specific levels of resources (CPU and Memory). Claims can request specific size and access modes (e.g., can be mounted once read/write or many times read-only).
+
+# persistent volumes
+Persistent volumes
+Just like our kubernetes cluster has nodes where we provision our pods.
+We can create peristent volumes where our pods can claim (ask for) storage 
+# static persistent volumes
+- Static persistent volumes
+Creating a NFS
+NFS is one famous implementation you can use to deploy your own persistent volume
+I’m running one on my aws server - 
