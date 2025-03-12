@@ -1,6 +1,4 @@
 # Roadmap for complete Devops Developer
-
-
 # Programming language(GO)
 # operating system(Linux)
 # Terminal knowledge
@@ -21,7 +19,7 @@
 # Application Managment(Artifactory)
 # Gitops(ArgoCD)
 # service Mesh(Istio, consul)
-# cloud design patterns
+# cloud design patterns.
 
 Than 
 
