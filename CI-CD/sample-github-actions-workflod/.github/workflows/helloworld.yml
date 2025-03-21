@@ -1,0 +1,16 @@
+name: "Hello world workflow"
+
+
+# This workflow is triggered on push events
+on:
+  push:
+    branches:
+      - main
+      - production
+
+jobs:
+    hello_world:
+        runs-on: ubuntu-latest
+        steps:
+            - name: "print hello world"
+              run: echo "Hello world"
