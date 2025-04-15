@@ -14,6 +14,6 @@
 - Providers
 - Resources - Defines the actual components of the infrastructure.
 - HCL language features
-- State managment
+- State managment - record of everything we provision/create/manage/delete in our infrastructure.
 - Variables and outputs
 - Modules
