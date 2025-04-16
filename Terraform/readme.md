@@ -17,3 +17,24 @@
 - State managment - record of everything we provision/create/manage/delete in our infrastructure.
 - Variables and outputs
 - Modules
+# Terraform state
+- sensitive data(backend configuration)
+
+#  Variables and outputs
+- input variable
+ variable "aws-region"{
+  description = "AWS region"
+  type = string
+  default = "us-west-2"
+ }
+
+ - output variable
+ output "instance_ip_address" {
+  value = aws_instance.server.private_ip
+ }
+
+ - local variable
+ locals{
+  service_name = "forum"
+  owner = "Community Team"
+ }
